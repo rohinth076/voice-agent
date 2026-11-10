@@ -1,0 +1,23 @@
+# secrets and local environment
+.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# runtime output and third-party text (the help articles are fetched locally, not redistributed)
+console-recordings/
+reports/
+data/raw/
+data/kb.json
+data/eval_cache/
+
+# personal notes and scratch scripts (kept on this machine only)
+LEARNING_LOG.md
+PROGRESS.md
+PLAN.md
+CONTEXT.md
+DEMO.md
+ask.py
+hello.py
+list_models.py

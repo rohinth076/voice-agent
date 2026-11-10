@@ -1,0 +1,11 @@
+=== Conversation 0e1e49 | channel: voice | started 2026-11-10 22:54:41 | model: groq:openai/gpt-oss-120b ===
+
+[22:54:54] CALLER: Mad is my money.
+[22:54:54] AGENT : Could you tell me the transfer number you’re looking for?
+           action=clarify | reason: Caller question is vague; need more details to determine how to help.
+
+[22:55:02] CALLER: 1, 2, 5, 6, 1
+[22:55:02] AGENT : That’s 1, 2, 5, 6, 1, is that correct?
+           action=use_tool | reason: Caller provided a transfer number, need confirmation before lookup
+
+=== Ended (caller_left) after 2 turn(s) at 22:55:38 ===

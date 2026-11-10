@@ -1,0 +1,12 @@
+=== Conversation 7f44c7 | channel: cli | started 2026-11-06 21:22:22 | model: gemini-3.6-flash ===
+
+[21:22:31] CALLER: Where is my transfer 12345?
+[21:22:31] AGENT : That's 1, 2, 3, 4, 5, is that right?
+           action=use_tool | reason: Caller provided a transfer number, so I need to read it back to confirm before looking it up.
+
+[21:22:33] CALLER: Can I talk to a person?
+[21:22:33] AGENT : I'm connecting you to a colleague who can help you right away.
+           action=handoff | reason: Caller explicitly asked to speak to a person, which requires a handoff.
+[21:22:33] ** HANDED OFF TO A HUMAN AGENT. Summary: Caller explicitly asked to speak to a person, which requires a handoff.
+
+=== Ended (handoff) after 2 turn(s) at 21:22:33 ===

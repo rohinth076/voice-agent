@@ -1,0 +1,52 @@
+{
+  "12345": {
+    "status": "Transfer Sent",
+    "stage": "With the recipient's bank, which is processing it",
+    "sent_on": "2026-11-04",
+    "estimated_arrival": "2026-11-06",
+    "arrives_today": true,
+    "needs_verification": false,
+    "banking_partner_reference": null,
+    "note": ""
+  },
+  "67890": {
+    "status": "Your money's being processed",
+    "stage": "Waiting for the sender's bank to send the money to us",
+    "sent_on": "2026-11-02",
+    "estimated_arrival": "2026-11-05",
+    "arrives_today": false,
+    "needs_verification": false,
+    "banking_partner_reference": null,
+    "note": "Has been in this status for more than 2 working days"
+  },
+  "24680": {
+    "status": "Money received",
+    "stage": "We have the money and are converting it",
+    "sent_on": "2026-11-03",
+    "estimated_arrival": "2026-11-05",
+    "arrives_today": false,
+    "needs_verification": true,
+    "banking_partner_reference": null,
+    "note": "We emailed the sender asking for extra information"
+  },
+  "13579": {
+    "status": "Complete",
+    "stage": "Sent to the recipient's bank, marked complete",
+    "sent_on": "2026-11-03",
+    "estimated_arrival": "2026-11-05",
+    "arrives_today": false,
+    "needs_verification": false,
+    "banking_partner_reference": "UTR 428193650027",
+    "note": ""
+  },
+  "11223": {
+    "status": "Money coming back to sender",
+    "stage": "The recipient's bank rejected the payment and it is returning to us",
+    "sent_on": "2026-10-30",
+    "estimated_arrival": "2026-11-03",
+    "arrives_today": false,
+    "needs_verification": false,
+    "banking_partner_reference": null,
+    "note": "Recipient details may be wrong"
+  }
+}
