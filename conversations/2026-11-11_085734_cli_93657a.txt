@@ -1,0 +1,18 @@
+=== Conversation 93657a | channel: cli | started 2026-11-11 08:57:34 | model: openai/gpt-oss-120b ===
+
+[08:57:35] CALLER: Where is my transfer 12345?
+[08:57:35] AGENT : That's 1, 2, 3, 4, 5, is that right?
+           action=use_tool | reason: Caller provided a transfer number and needs status lookup
+
+[08:57:36] CALLER: yes
+[08:57:36] AGENT : Let me check that for you.
+[08:57:36] AGENT : Your transfer has been sent and is now with the recipient’s bank for processing. It should arrive today.
+           action=answer | reason: Provided transfer status indicates it is with the recipient's bank and should arrive today
+           tool check_transfer_status -> {'transfer_id': '12345', 'status': 'Transfer Sent', 'stage': "With the recipient's bank, which is processing it", 'sent_on': '2026-11-04', 'estimated_arrival': '2026-11-06', 'arrives_today': True, 'needs_verification': False, 'banking_partner_reference': None, 'note': ''}
+
+[08:57:37] CALLER: I sent money to the wrong person, can I cancel it?
+[08:57:37] AGENT : I’m connecting you to a colleague who can help with that.
+           action=handoff | reason: Caller wants to cancel a transfer, which is outside what I can help with
+[08:57:37] ** HANDED OFF TO A HUMAN AGENT. Summary: Caller wants to cancel a transfer, which is outside what I can help with
+
+=== Ended (handoff) after 3 turn(s) at 08:57:37 ===

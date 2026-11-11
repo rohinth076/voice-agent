@@ -1,0 +1,7 @@
+=== Conversation 18c249 | channel: cli | started 2026-11-11 08:55:23 | model: openai/gpt-oss-120b ===
+
+[08:55:23] CALLER: Where is my transfer
+[08:55:23] AGENT : Sure, could you please tell me your transfer number?
+           action=use_tool | reason: Caller asks for the status of their own transfer but has not provided a transfer number
+
+=== Ended (caller_left) after 1 turn(s) at 08:55:23 ===
