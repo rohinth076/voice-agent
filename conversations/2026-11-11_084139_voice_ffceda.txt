@@ -1,0 +1,30 @@
+=== Conversation ffceda | channel: voice | started 2026-11-11 08:41:39 | model: groq:openai/gpt-oss-120b ===
+
+[08:41:51] CALLER: What is a proof of payment?
+[08:41:51] AGENT : A proof of payment is a document showing you’ve sent money from your bank account, such as a PDF of your bank statement or a screenshot from your online banking, that confirms the transaction.
+           action=answer | reason: User asks for definition of proof of payment, which is covered in the knowledge base.
+
+[08:42:10] CALLER: I send it on Friday. Will it get there over the weekend?
+[08:42:10] AGENT : Transfers sent on Friday usually won’t be processed over the weekend, so the money will likely arrive on the next working day after the weekend.
+           action=answer | reason: User asks about weekend transfer timing, which is covered in the knowledge base.
+
+[08:42:26] CALLER: where is my transfer 12345.
+[08:42:26] AGENT : That’s 1, 2, 3, 4, 5, is that right?
+           action=use_tool | reason: Caller wants status of their own transfer and provided a number, need to confirm before lookup.
+
+[08:42:36] CALLER: Yes.
+[08:42:36] AGENT : Let me check that for you.
+[08:42:36] AGENT : Your transfer is with the recipient’s bank now and is set to arrive today.
+           action=answer | reason: Lookup provided transfer status showing it is with the recipient's bank and set to arrive today.
+           tool check_transfer_status -> {'transfer_id': '12345', 'status': 'Transfer Sent', 'stage': "With the recipient's bank, which is processing it", 'sent_on': '2026-11-04', 'estimated_arrival': '2026-11-06', 'arrives_today': True, 'needs_verification': False, 'banking_partner_reference': None, 'note': ''}
+
+[08:42:49] CALLER: Sorry, what's the Banking Partner Referring Number?
+[08:42:49] AGENT : A banking partner reference number is a code we give for some transfers that you can give to the recipient, so their bank can track the payment.
+           action=answer | reason: User asks what a banking partner reference number is, which is covered in the knowledge base.
+
+[08:43:04] CALLER: I sent money to a wrong person, can I cancel it?
+[08:43:04] AGENT : I’m connecting you to a colleague who can help with that.
+           action=handoff | reason: Caller wants to cancel a transfer, which is outside what I can help with
+[08:43:04] ** HANDED OFF TO A HUMAN AGENT. Summary: Caller wants to cancel a transfer, which is outside what I can help with
+
+=== Ended (handoff) after 6 turn(s) at 08:43:04 ===

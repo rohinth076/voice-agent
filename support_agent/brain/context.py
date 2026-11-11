@@ -71,9 +71,9 @@ def get_context(query: str, k: int = TOP_K) -> str:
 def retrieval_query(history, n_user_turns: int = 3) -> str:
     """The caller's last few messages joined (a bare 'yes' alone would match nothing)."""
     texts = []
-    for content in reversed(history):
-        text = "".join(p.text or "" for p in content.parts)
-        if content.role == "user" and not text.startswith("[SYSTEM:"):
+    for message in reversed(history):
+        text = message["content"]
+        if message["role"] == "user" and not text.startswith("[SYSTEM:"):
             texts.append(text)
             if len(texts) == n_user_turns:
                 break

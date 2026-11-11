@@ -4,13 +4,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from support_agent.config import MODEL, ROOT
+from support_agent.config import LLM_MODEL, ROOT
 
 LOG_DIR = ROOT / "conversations"
 
 
 class ConversationLog:
-    def __init__(self, channel: str = "cli", log_dir: Path = LOG_DIR, model: str = MODEL):
+    def __init__(self, channel: str = "cli", log_dir: Path = LOG_DIR, model: str = LLM_MODEL):
         self.channel = channel
         self.model = model
         self.id = uuid.uuid4().hex[:6]

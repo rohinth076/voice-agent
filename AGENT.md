@@ -62,7 +62,7 @@ keyword search over the caller's last three messages picks the 6 best chunks; on
 
 ## Voice behaviour (`support_agent/adapters/voice.py`)
 
-- Pipeline: microphone, voice activity detection (Silero), Groq Whisper, the brain, Groq Orpheus, speaker.
+- Pipeline: microphone, voice activity detection (Silero), speech-to-text, the brain, text-to-speech, speaker (all providers set in `.env`).
 - The brain replaces LiveKit's LLM step (`llm_node`), so the same prompt, tool flow and handoff run in voice and in the CLI.
 - Turn taking: waits 0.6 s of silence, at most 2 s when the sentence looks unfinished. Speculative generation is off.
 - Digits longer than 3 are read one at a time; links and markdown are never spoken.
@@ -72,9 +72,10 @@ keyword search over the caller's last three messages picks the 6 best chunks; on
 
 ## Models and limits
 
-Default model `groq:openai/gpt-oss-120b`. If its free daily budget runs out mid-call the agent switches to
-`gemini-3.6-flash` (needs `GEMINI_API_KEY`), then to `groq:openai/gpt-oss-20b`. The 20b model handles handoffs but
-fails the transfer lookup. Change models in `support_agent/config.py`. A model that returns an empty reply gets a safe default
+The demo ran on `openai/gpt-oss-120b` on Groq. Provider, key and model come only from `.env`, nothing is defaulted in code (`LLM_API_KEY`, `LLM_BASE_URL`,
+`LLM_MODEL`; voice: `STT_*`, `TTS_*`), so any OpenAI-compatible endpoint works. If the optional `LLM_FALLBACK_MODELS` is set and the main
+model's daily budget runs out mid-call, the agent moves to the next one. Small models (gpt-oss-20b) handle handoffs but
+fail the transfer lookup. Settings are read in `support_agent/config.py`. A model that returns an empty reply gets a safe default
 line instead of silence.
 
 ## Records
@@ -105,7 +106,7 @@ and by trying the agent out loud.
 | `support_agent/brain/core.py` | model calls, structured decision, retries, tool turn, model fallback |
 | `support_agent/brain/context.py` | retrieval |
 | `support_agent/brain/tools.py` | the mock transfer lookup |
-| `support_agent/brain/groq_client.py` | Groq adapter |
+| `support_agent/brain/llm_client.py` | OpenAI-compatible chat adapter |
 | `support_agent/adapters/cli.py` | typed conversation |
 | `support_agent/adapters/voice.py` | spoken conversation |
 | `support_agent/transcripts.py` | conversation records |

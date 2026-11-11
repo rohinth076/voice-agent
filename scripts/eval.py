@@ -1,6 +1,6 @@
 """Scores the agent's first decision on data/eval.json against the labels. Results are cached per model and prompt.
 
-Example: python -m scripts.eval --model groq:openai/gpt-oss-120b --split dev [--type near_miss] [--limit N] [--dry-run]
+Example: python -m scripts.eval --model openai/gpt-oss-120b --split dev [--type near_miss] [--limit N] [--dry-run]
 """
 import argparse
 import ast
@@ -12,11 +12,9 @@ import time
 from collections import Counter, defaultdict
 from datetime import datetime
 
-from google.genai import errors
-
 from support_agent.brain import DailyQuotaExceeded, Decision, ProviderError, decide
 from support_agent.brain.prompt import SYSTEM_PROMPT
-from support_agent.config import MODEL, ROOT, THINKING_BUDGET
+from support_agent.config import LLM_MODEL, ROOT
 
 LABELS = ["answer", "clarify", "handoff", "use_tool"]
 CACHE_DIR = ROOT / "data" / "eval_cache"
@@ -38,8 +36,7 @@ def prompt_fingerprint() -> str:
     """Hash of everything that changes behaviour, so editing the prompt or retrieval invalidates cached results."""
     import support_agent.brain.context as retrieval
     kb = (ROOT / "data" / "kb.json").read_text(encoding="utf-8")
-    blob = (SYSTEM_PROMPT + kb + code_signature(retrieval) + json.dumps(Decision.model_json_schema(), sort_keys=True)
-            + f"|think={THINKING_BUDGET}")
+    blob = (SYSTEM_PROMPT + kb + code_signature(retrieval) + json.dumps(Decision.model_json_schema(), sort_keys=True))
     return hashlib.sha256(blob.encode()).hexdigest()[:12]
 
 
@@ -48,7 +45,7 @@ def cache_key(model: str, fingerprint: str, question: str) -> str:
 
 
 def safe_name(model: str) -> str:
-    """'groq:openai/gpt-oss-120b' contains ':' and '/', which are not valid in a file name."""
+    """a model name such as 'openai/gpt-oss-120b' contains '/', which are not valid in a file name."""
     return re.sub(r"[^A-Za-z0-9._-]", "_", model)
 
 
@@ -108,15 +105,13 @@ def print_report(rows: list[dict], m: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default=MODEL)
+    ap.add_argument("--model", default=LLM_MODEL)
     ap.add_argument("--split", choices=["dev", "holdout", "all"], default="dev")
     ap.add_argument("--type", default=None, help="only items of this type, e.g. near_miss, on_topic, human_request")
     ap.add_argument("--limit", type=int, default=None, help="max UNCACHED items to run this session")
-    ap.add_argument("--pace", type=float, default=None, help="seconds between requests; default depends on the model's token-per-minute limit")
+    ap.add_argument("--pace", type=float, default=20, help="seconds between requests; free tiers limit tokens per minute")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
-    if args.pace is None:
-        args.pace = 20 if args.model.startswith(("groq:", "gemma")) else 12.5
 
     items = json.loads((ROOT / "data" / "eval.json").read_text(encoding="utf-8"))
     if args.split != "all":
@@ -143,7 +138,7 @@ def main() -> None:
             except DailyQuotaExceeded as e:
                 stopped = str(e)
                 break
-            except (errors.APIError, ProviderError) as e:
+            except ProviderError as e:
                 if e.code in (429, 500, 503, 504) and wait_try < 2:
                     print(f"  transient API error ({e.code}); waiting 65 s then retrying {item['id']}...")
                     time.sleep(65)

@@ -1,17 +1,17 @@
 """Voice agent: LiveKit Agents around the same brain the CLI uses.
 
 Run: python -m support_agent.adapters.voice console --input-device <mic> --output-device <headphones>
-Pipeline: mic -> VAD -> Groq Whisper -> brain -> Groq Orpheus -> speaker.
+Pipeline: mic -> VAD -> STT -> brain -> TTS -> speaker. Providers come from .env (see config.py).
 """
 import asyncio
 import re
 
 from livekit.agents import Agent, AgentServer, AgentSession, JobContext, cli, llm
-from google.genai import types
-from livekit.plugins import groq, silero
+from livekit.plugins import openai, silero
 
 from support_agent.brain import Decision, respond, respond_with_fallback
-from support_agent.config import VOICE_FALLBACK_MODELS, VOICE_MODEL
+from support_agent import config
+from support_agent.adapters.speech import SpeechTTS
 from support_agent.transcripts import ConversationLog
 
 GREETING = "Hi, thanks for calling. How can I help you today?"
@@ -48,9 +48,9 @@ class BrainPlaceholderLLM(llm.LLM):
 
 
 class SupportAgent(Agent):
-    def __init__(self, model: str = VOICE_MODEL, fallbacks: list[str] | None = None) -> None:
+    def __init__(self, model: str = config.LLM_MODEL, fallbacks: list[str] | None = None) -> None:
         super().__init__(instructions="unused: the system prompt lives in the brain (brain/prompt.py)")
-        self.models = [model] + list(VOICE_FALLBACK_MODELS if fallbacks is None else fallbacks)
+        self.models = [model] + (config.LLM_FALLBACK_MODELS if fallbacks is None else list(fallbacks))
         self.history = []
         self.log = ConversationLog("voice", model=model)
 
@@ -60,11 +60,10 @@ class SupportAgent(Agent):
     def note_interrupted(self, heard: str) -> None:
         """The caller talked over the agent: keep only what they heard in the history and the transcript."""
         for i in range(len(self.history) - 1, -1, -1):
-            if self.history[i].role == "model":
+            if self.history[i]["role"] == "assistant":
                 try:
-                    d = Decision.model_validate_json(self.history[i].parts[0].text)
-                    self.history[i] = types.Content(role="model", parts=[types.Part(
-                        text=d.model_copy(update={"reply": heard}).model_dump_json())])
+                    d = Decision.model_validate_json(self.history[i]["content"])
+                    self.history[i] = {"role": "assistant", "content": d.model_copy(update={"reply": heard}).model_dump_json()}
                 except ValueError:
                     pass
                 break
@@ -117,6 +116,23 @@ class SupportAgent(Agent):
             self.session.shutdown()
 
 
+def build_stt():
+    """Any OpenAI-compatible transcription endpoint (Groq, OpenAI, a local server...)."""
+    config.require(STT_API_KEY=config.STT_API_KEY, STT_BASE_URL=config.STT_BASE_URL, STT_MODEL=config.STT_MODEL)
+    extra = {"language": config.STT_LANGUAGE} if config.STT_LANGUAGE else {}
+    return openai.STT(model=config.STT_MODEL, api_key=config.STT_API_KEY, base_url=config.STT_BASE_URL,
+                      use_realtime=False, **extra,
+                      prompt="A customer support call about a money transfer: where is my money, transfer number, proof of payment.")
+
+
+def build_tts():
+    """Any OpenAI-compatible /audio/speech endpoint."""
+    config.require(TTS_API_KEY=config.TTS_API_KEY, TTS_BASE_URL=config.TTS_BASE_URL,
+                   TTS_MODEL=config.TTS_MODEL, TTS_VOICE=config.TTS_VOICE)
+    return SpeechTTS(model=config.TTS_MODEL, voice=config.TTS_VOICE, api_key=config.TTS_API_KEY,
+                     base_url=config.TTS_BASE_URL, response_format=config.TTS_RESPONSE_FORMAT, sample_rate=config.TTS_SAMPLE_RATE)
+
+
 server = AgentServer()
 
 
@@ -126,9 +142,8 @@ async def entrypoint(ctx: JobContext) -> None:
     session = AgentSession(
         vad=silero.VAD.load(),
         llm=BrainPlaceholderLLM(),
-        stt=groq.STT(model="whisper-large-v3", language="en",
-                     prompt="A customer support call about a money transfer: where is my money, transfer number, proof of payment."),
-        tts=groq.TTS(voice="hannah"),
+        stt=build_stt(),
+        tts=build_tts(),
         turn_handling={
             "endpointing": {"min_delay": 0.6, "max_delay": 2.0},
             "preemptive_generation": {"enabled": False},  # would call the brain on a guess, before the caller finishes

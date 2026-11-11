@@ -153,16 +153,33 @@ class TestSpeakableAndInterruption(AgentCase):
         self.assertIn("Your number is 12345.", self.text())
 
     def test_interruption_trims_history_to_what_was_heard_and_is_logged(self):
-        from google.genai import types
         full = Decision(reason="r", action="answer", reply="Your transfer is on its way and should arrive soon.")
-        self.agent.history = [types.Content(role="user", parts=[types.Part(text="hi")]),
-                              types.Content(role="model", parts=[types.Part(text=full.model_dump_json())])]
+        self.agent.history = [{"role": "user", "content": "hi"},
+                              {"role": "assistant", "content": full.model_dump_json()}]
         self.agent.note_interrupted("Your transfer is on its")
-        kept = Decision.model_validate_json(self.agent.history[-1].parts[0].text)
+        kept = Decision.model_validate_json(self.agent.history[-1]["content"])
         self.assertEqual(kept.reply, "Your transfer is on its")
         self.assertEqual(kept.action, "answer")
         self.assertIn("INTERRUPTED", self.text())
         self.assertIn("Your transfer is on its", self.text())
+
+
+class TestProviderSelection(unittest.TestCase):
+    def test_stt_and_tts_use_the_configured_endpoint(self):
+        cfg = dict(STT_MODEL="my-stt", STT_API_KEY="k", STT_BASE_URL="https://stt.test/v1", STT_LANGUAGE="en",
+                   TTS_MODEL="my-tts", TTS_VOICE="v", TTS_API_KEY="k", TTS_BASE_URL="https://tts.test/v1")
+        with patch.multiple(voice_agent.config, **cfg):
+            stt, tts = voice_agent.build_stt(), voice_agent.build_tts()
+        self.assertEqual(stt.model, "my-stt")
+        self.assertEqual(tts.model, "my-tts")
+        self.assertEqual(type(tts).__name__, "SpeechTTS")
+
+    def test_missing_voice_settings_are_named_in_the_error(self):
+        with patch.multiple(voice_agent.config, TTS_MODEL="", TTS_VOICE="", TTS_API_KEY="k", TTS_BASE_URL="https://x.test"):
+            with self.assertRaises(ValueError) as cm:
+                voice_agent.build_tts()
+        self.assertIn("TTS_MODEL", str(cm.exception))
+        self.assertIn("TTS_VOICE", str(cm.exception))
 
 
 class TestModelFallback(AgentCase):

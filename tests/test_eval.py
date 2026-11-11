@@ -40,7 +40,7 @@ if __name__ == "__main__":
 class TestSafeName(unittest.TestCase):
     def test_model_names_become_valid_file_names(self):
         import scripts.eval as ev
-        self.assertEqual(ev.safe_name("groq:openai/gpt-oss-120b"), "groq_openai_gpt-oss-120b")
+        self.assertEqual(ev.safe_name("openai/gpt-oss-120b"), "openai_gpt-oss-120b")
         self.assertEqual(ev.safe_name("gemma-4-26b-a4b-it"), "gemma-4-26b-a4b-it")
 
 

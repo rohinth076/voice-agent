@@ -2,7 +2,7 @@
 import sys
 
 from support_agent.brain import DailyQuotaExceeded, ProviderError, respond_with_fallback
-from support_agent.config import VOICE_FALLBACK_MODELS, VOICE_MODEL
+from support_agent.config import LLM_FALLBACK_MODELS, LLM_MODEL
 from support_agent.transcripts import ConversationLog
 
 
@@ -11,7 +11,7 @@ def main() -> None:
     if "--model" in sys.argv:
         models = [sys.argv[sys.argv.index("--model") + 1]]
     else:
-        models = [VOICE_MODEL] + list(VOICE_FALLBACK_MODELS)
+        models = [LLM_MODEL] + LLM_FALLBACK_MODELS
     model = models[0]
     history = []
     log = ConversationLog("cli", model=model)
